@@ -20,7 +20,7 @@ import java.net.URL;
 public class MainActivity extends AppCompatActivity {
     private final String amazonBaseUrl =
             "https://www.amazon.co.uk/s/ref=nb_sb_noss_2?url=search-alias%3Daps&field-keywords=";
-    private final String ebuyerBaseUrl = "";
+    private final String ebuyerBaseUrl = "http://www.ebuyer.com/search?q=";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
             String searchString = editText.getText().toString();
             String[] terms = searchString.split(" ");
             String amazonSearchUrl = buildSearchUrl(amazonBaseUrl, terms);
+            String ebuyerSearchUrl = buildSearchUrl(ebuyerBaseUrl, terms);
+            new DownloadWebpageTask().execute(amazonSearchUrl, ebuyerSearchUrl);
         } else {
             // Display error toast
             Toast.makeText(this, "No network connection.", Toast.LENGTH_SHORT).show();
@@ -66,6 +68,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class DownloadWebpageTask extends AsyncTask<String, Void, String> {
+        /**
+         * Called when DownloadWebpageTask.execute() is called
+         * @param urls Variable argument strings of URLs
+         * @return String holding the downloaded page HTML
+         */
         @Override
         protected String doInBackground(String... urls) {
             // params come from the execute() call: params[0] is the url
@@ -76,6 +83,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        /**
+         * Make HTTP connection and get stream of information
+         * @param myUrl URL to connect to as string
+         * @return Web page HTML as string
+         * @throws IOException
+         */
         private String downloadUrl(String myUrl) throws IOException {
             InputStream inputStream = null;
             try {
@@ -109,6 +122,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        /**
+         * Convers input stream from HttpURLConnection to string
+         * @param stream Stream from connection to URL
+         * @return String containing content of stream
+         * @throws IOException Exception reading from stream and converting to string
+         */
         private String readInputStream(InputStream stream) throws IOException {
             BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
             StringBuilder builder = new StringBuilder();
@@ -119,6 +138,10 @@ public class MainActivity extends AppCompatActivity {
             return builder.toString();
         }
 
+        /**
+         * Executes after task finishes
+         * @param result String holding web page
+         */
         @Override
         protected void onPostExecute(String result) {
             // Update list adapter
