@@ -7,7 +7,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -21,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
     private final String amazonBaseUrl =
             "https://www.amazon.co.uk/s/ref=nb_sb_noss_2?url=search-alias%3Daps&field-keywords=";
     private final String ebuyerBaseUrl = "http://www.ebuyer.com/search?q=";
+    // TODO Create custom ArrayAdapter
+    private ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Search button clicked. Proceed to make search url and download page
+     *
      * @param view View passed in by activity on button click
      */
     public void searchButtonClicked(View view) {
@@ -54,8 +59,9 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Takes a string array containing search terms and returns the url
      * to make an HTTP reqest
+     *
      * @param baseUrl Containing the url up to the search query
-     * @param terms Words to build query with
+     * @param terms   Words to build query with
      * @return Complete URL with query
      */
     private String buildSearchUrl(String baseUrl, String[] terms) {
@@ -67,24 +73,30 @@ public class MainActivity extends AppCompatActivity {
         return builder.toString();
     }
 
-    private class DownloadWebpageTask extends AsyncTask<String, Void, String> {
+    private class DownloadWebpageTask extends AsyncTask<String, Void, String[]> {
         /**
          * Called when DownloadWebpageTask.execute() is called
+         *
          * @param urls Variable argument strings of URLs
          * @return String holding the downloaded page HTML
          */
         @Override
-        protected String doInBackground(String... urls) {
+        protected String[] doInBackground(String... urls) {
             // params come from the execute() call: params[0] is the url
-            try {
-                return downloadUrl(urls[0]);
-            } catch (IOException e) {
-                return "Unable to retrieve web page. URL may be invalid";
+            String[] results = new String[urls.length];
+            for (int i = 0; i < urls.length; i++) {
+                try {
+                    results[i] = downloadUrl(urls[i]);
+                } catch (IOException e) {
+                    results[i] = "Unable to retrieve web page. URL may be invalid";
+                }
             }
+            return results;
         }
 
         /**
          * Make HTTP connection and get stream of information
+         *
          * @param myUrl URL to connect to as string
          * @return Web page HTML as string
          * @throws IOException
@@ -123,7 +135,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         /**
-         * Convers input stream from HttpURLConnection to string
+         * Converts input stream from HttpURLConnection to string
+         *
          * @param stream Stream from connection to URL
          * @return String containing content of stream
          * @throws IOException Exception reading from stream and converting to string
@@ -139,12 +152,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         /**
-         * Executes after task finishes
-         * @param result String holding web page
+         * Executes after task finishes populating ListView with results
+         *
+         * @param results String holding web page
          */
         @Override
-        protected void onPostExecute(String result) {
-            // Update list adapter
+        protected void onPostExecute(String[] results) {
+            // Create adapter with results
+            adapter = new ArrayAdapter<>(getBaseContext(), android.R.layout.simple_list_item_1, results);
+            ListView listView = (ListView) findViewById(R.id.products_list_view);
+            // Populate ListView
+            listView.setAdapter(adapter);
         }
     }
 }
