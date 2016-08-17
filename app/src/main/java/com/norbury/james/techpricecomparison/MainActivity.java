@@ -18,6 +18,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private final String amazonBaseUrl =
@@ -123,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
                 // Convert stream to string
                 return readInputStream(inputStream);
             } catch (Exception e) {
-                // TODO Suitable error handling for bad response code
+                // TODO Suit able error handling for bad response code
                 e.printStackTrace();
                 return "Error downloading pages.";
             } finally {
@@ -163,6 +165,11 @@ public class MainActivity extends AppCompatActivity {
             ListView listView = (ListView) findViewById(R.id.products_list_view);
             // Populate ListView
             listView.setAdapter(adapter);
+            List<Product> products = new ArrayList<>();
+            for (String html : results) {
+                HtmlParser htmlParser = new HtmlParser(html);
+                products.addAll(htmlParser.getProducts());
+            }
         }
     }
 }
