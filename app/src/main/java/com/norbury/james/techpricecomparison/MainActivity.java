@@ -7,9 +7,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -25,8 +23,6 @@ public class MainActivity extends AppCompatActivity {
     private final String amazonBaseUrl =
             "https://www.amazon.co.uk/s/ref=nb_sb_noss_2?url=search-alias%3Daps&field-keywords=";
     private final String ebuyerBaseUrl = "http://www.ebuyer.com/search?q=";
-    // TODO Create custom ArrayAdapter
-    private ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,14 +156,20 @@ public class MainActivity extends AppCompatActivity {
          */
         @Override
         protected void onPostExecute(String[] results) {
-            // Create adapter with results
+            /*// Create adapter with results
             adapter = new ArrayAdapter<>(getBaseContext(), android.R.layout.simple_list_item_1, results);
             ListView listView = (ListView) findViewById(R.id.products_list_view);
             // Populate ListView
             listView.setAdapter(adapter);
+            */
             List<Product> products = new ArrayList<>();
             for (String html : results) {
-                HtmlParser htmlParser = new HtmlParser(html);
+                HtmlParser htmlParser;
+                if (html.contains("amazon")) {
+                    htmlParser = new HtmlParser(html, "www.amazon.co.uk");
+                } else {
+                    htmlParser = new HtmlParser(html, "www.ebuyer.com");
+                }
                 products.addAll(htmlParser.getProducts());
             }
         }
